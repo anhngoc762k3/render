@@ -9,7 +9,7 @@ client = Client()
 os.environ["G4F_NO_UPDATE"] = "true"
 os.environ["G4F_DEBUG"] = "false"
 
-pdf_file_path = "MTvE2.pdf"  # File phải nằm cùng thư mục hoặc được đẩy lên GitHub
+pdf_file_path = "MTvE2.pdf"  
 
 class HiddenPrints:
     def __enter__(self):
@@ -72,5 +72,5 @@ def home():
     return "API is running."
 
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5000))  # PORT do Render cấp khi deploy
+    port = int(os.environ.get("PORT", 5000)) 
     app.run(host="0.0.0.0", port=port)
