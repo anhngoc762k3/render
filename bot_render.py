@@ -6,12 +6,10 @@ from g4f.client import Client
 app = Flask(__name__)
 client = Client()
 
-# Bật/tắt các cài đặt g4f để giảm log
 os.environ["G4F_NO_UPDATE"] = "true"
 os.environ["G4F_DEBUG"] = "false"
 
-# File PDF (nên để trong thư mục gốc hoặc đẩy lên GitHub cùng mã nguồn)
-pdf_file_path = "MTvE2.pdf"
+pdf_file_path = "MTvE2.pdf"  # File phải nằm cùng thư mục hoặc được đẩy lên GitHub
 
 class HiddenPrints:
     def __enter__(self):
@@ -46,9 +44,9 @@ def generate_response(question, pdf_text):
         with HiddenPrints():
             response = client.chat.completions.create(
                 model="gpt-4",
-                messages=[{"role": "user", "content": prompt}]
+                messages=[{"role": "user", "content": prompt}],
+                stream=False
             )
-
         answer = response.choices[0].message.content.strip()
         answer = re.sub(r'\n+', '\n', answer)
         return answer
