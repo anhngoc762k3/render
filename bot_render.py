@@ -69,7 +69,7 @@ def ask_question():
 
 @app.route("/", methods=["GET"])
 def home():
-    return "API is running."
+    return "API is running11."
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000)) 
