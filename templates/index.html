@@ -2,21 +2,21 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>Chatbot Hỏi Đáp PDF + JSON</title>
-    <link rel="stylesheet" href="style.css">
+    <title>Chatbot Hỏi Đáp Tài Liệu</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
 <div class="container">
-    <h2>🤖 Chatbot Hỏi Đáp Tài Liệu</h2>
+    <h2>Hỏi Đáp Tài Liệu PDF + JSON</h2>
 
     <div id="chatbox"></div>
 
     <form id="questionForm">
-        <textarea id="question" name="question" placeholder="Nhập câu hỏi của bạn..." required></textarea>
-        <button type="submit">Gửi</button>
+        <textarea id="question" name="question" placeholder="Nhập câu hỏi..." required></textarea><br>
+        <button type="submit">Gửi câu hỏi</button>
     </form>
 </div>
 
-<script src="script.js"></script>
+<script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
 </html>
