@@ -8,11 +8,10 @@ document.addEventListener("DOMContentLoaded", function () {
         await sendQuestion();
     });
 
-    // Gửi bằng Enter, xuống dòng bằng Shift+Enter
     input.addEventListener("keydown", function (e) {
         if (e.key === "Enter" && !e.shiftKey) {
-            e.preventDefault(); // Ngăn xuống dòng
-            form.requestSubmit(); // Kích hoạt submit
+            e.preventDefault();
+            form.requestSubmit();
         }
     });
 
