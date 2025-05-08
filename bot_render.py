@@ -1,49 +1,76 @@
 from flask import Flask, request, jsonify, render_template
+import os, re, sys
 import pdfplumber
 from g4f.client import Client
-import os
 
 app = Flask(__name__)
 client = Client()
 
-# Đường dẫn file PDF
+os.environ["G4F_NO_UPDATE"] = "true"
+os.environ["G4F_DEBUG"] = "false"
+
 pdf_file_path = "MTvE2.pdf"
 
-# Hàm đọc nội dung từ file PDF
+class HiddenPrints:
+    def __enter__(self):
+        self._original_stdout = sys.stdout
+        self._original_stderr = sys.stderr
+        sys.stdout = open(os.devnull, 'w')
+        sys.stderr = open(os.devnull, 'w')
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        sys.stdout.close()
+        sys.stderr.close()
+        sys.stdout = self._original_stdout
+        sys.stderr = self._original_stderr
+
 def read_pdf(file_path):
-    with pdfplumber.open(file_path) as pdf:
-        text = ""
-        for page in pdf.pages:
-            text += page.extract_text() + "\n"
-    return text
+    try:
+        with pdfplumber.open(file_path) as pdf:
+            text = ""
+            for page in pdf.pages:
+                extracted_text = page.extract_text()
+                if extracted_text:
+                    text += extracted_text + "\n"
+        return text
+    except Exception as e:
+        return f"Lỗi đọc file PDF: {str(e)}"
 
-# Hàm trả lời câu hỏi dựa trên nội dung PDF
 def generate_response(question, pdf_text):
-    context = pdf_text[:6000] if len(pdf_text) > 6000 else pdf_text
-    prompt = f"Đây là một đoạn văn từ tài liệu: {context}\n\nCâu hỏi: {question}\nTrả lời:"
+    try:
+        context = pdf_text[:6000] if len(pdf_text) > 6000 else pdf_text
+        prompt = f"Đây là một đoạn văn từ tài liệu: {context}\n\nCâu hỏi: {question}\nTrả lời:"
 
-    response = client.chat.completions.create(
-        model="gpt-4",  # hoặc model bạn muốn sử dụng
-        messages=[{"role": "user", "content": prompt}],
-    )
-    return response.choices[0].message.content.strip()
+        with HiddenPrints():
+            response = client.chat.completions.create(
+                model="gpt-4",
+                messages=[{"role": "user", "content": prompt}],
+                stream=False
+            )
+        answer = response.choices[0].message.content.strip()
+        answer = re.sub(r'\n+', '\n', answer)
+        return answer
+    except Exception as e:
+        return f"Đã xảy ra lỗi: {str(e)}"
 
-# Đọc nội dung từ file PDF
-pdf_text = read_pdf(pdf_file_path)
+@app.route("/", methods=["GET"])
+def home():
+    return render_template("index.html")
 
-@app.route('/')
-def index():
-    return render_template('index.html')  # Đảm bảo bạn có file index.html trong thư mục templates
-
-@app.route('/ask', methods=['POST'])
-def ask():
-    data = request.json
-    question = data.get('question')
+@app.route("/ask", methods=["POST"])
+def ask_question():
+    data = request.form
+    question = data.get("question", "")
     if not question:
-        return jsonify({"error": "Không nhận được câu hỏi."}), 400
+        return jsonify({"error": "Missing question"}), 400
+
+    pdf_text = read_pdf(pdf_file_path)
+    if "Lỗi đọc file PDF" in pdf_text:
+        return jsonify({"error": pdf_text}), 500
 
     answer = generate_response(question, pdf_text)
     return jsonify({"answer": answer})
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port)
