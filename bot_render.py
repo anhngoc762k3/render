@@ -12,7 +12,7 @@ client = Client()
 os.environ["G4F_NO_UPDATE"] = "true"
 os.environ["G4F_DEBUG"] = "false"
 
-pdf_file_path = "MTvE2.pdf"
+pdf_file_path = "data1.pdf"
 json_file_path = "data.json"
 
 class HiddenPrints:
