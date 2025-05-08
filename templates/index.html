@@ -98,18 +98,12 @@
         <button type="submit">Gửi câu hỏi</button>
     </form>
 
-    <div id="response" class="response" style="display: none;">
-        <strong>Trả lời:</strong><br>
-        <pre id="answerText"></pre>
-    </div>
 </div>
 
 <script>
     const chatbox = document.getElementById("chatbox");
     const form = document.getElementById("questionForm");
     const input = document.getElementById("question");
-    const responseDiv = document.getElementById("response");
-    const answerText = document.getElementById("answerText");
 
     form.addEventListener("submit", async (e) => {
         e.preventDefault();
@@ -133,10 +127,6 @@
 
         // Hiển thị câu trả lời
         appendMessage("Bot", answer, "bot");
-
-        // Hiển thị kết quả trả lời ở dưới form
-        answerText.textContent = answer;
-        responseDiv.style.display = 'block';
 
         input.value = "";
         input.focus();
