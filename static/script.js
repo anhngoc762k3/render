@@ -2,7 +2,7 @@ document.getElementById("questionForm").addEventListener("submit", function(even
     event.preventDefault();
 
     const question = document.getElementById("question").value;
-    const chatHistory = document.getElementById("chatHistory");
+    const responseElement = document.getElementById("answerText");
 
     fetch("/ask", {
         method: "POST",
@@ -13,29 +13,15 @@ document.getElementById("questionForm").addEventListener("submit", function(even
     })
     .then(response => response.json())
     .then(data => {
-        if (data.history && Array.isArray(data.history)) {
-            // Xóa lịch sử cũ
-            chatHistory.innerHTML = "";
-
-            // Hiển thị tất cả các cặp hỏi & đáp
-            data.history.forEach(pair => {
-                const block = document.createElement("div");
-                block.classList.add("chat-block");
-
-                block.innerHTML = `
-                    <p><strong>Câu hỏi:</strong> ${pair.question}</p>
-                    <p><strong>Trả lời:</strong> ${pair.answer}</p>
-                    <hr>
-                `;
-                chatHistory.appendChild(block);
-            });
+        if (data.answer) {
+            responseElement.innerHTML = data.answer;  // ⚠️ Cho phép <br> hoạt động
         } else if (data.error) {
-            chatHistory.innerHTML = `<p>Lỗi: ${data.error}</p>`;
+            responseElement.innerHTML = "Lỗi: " + data.error;
         }
     })
     .catch(error => {
-        chatHistory.innerHTML = `<p>Lỗi: ${error}</p>`;
+        responseElement.innerHTML = "Lỗi: " + error;
     });
 
-    document.getElementById("question").value = ""; // Xóa ô nhập
+    document.getElementById("question").value = ""; // Xoá ô nhập sau khi gửi
 });
