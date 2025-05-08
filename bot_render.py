@@ -43,7 +43,7 @@ def generate_response(question, pdf_text):
         return f"Đã xảy ra lỗi: {str(e)}"
 
 # Đọc nội dung từ file PDF
-pdf_file_path = 'DATAA.pdf'  # Thay bằng đường dẫn đến file PDF của bạn
+pdf_file_path = 'MTvE2.pdf'  # Thay bằng đường dẫn đến file PDF của bạn
 pdf_text = read_pdf(pdf_file_path)
 
 # Khởi tạo Flask app
