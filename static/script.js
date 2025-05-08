@@ -1,27 +1,53 @@
-document.getElementById("questionForm").addEventListener("submit", function(event) {
-    event.preventDefault();
+const chatbox = document.getElementById("chatbox");
+const form = document.getElementById("questionForm");
+const input = document.getElementById("question");
 
-    const question = document.getElementById("question").value;
-    const responseElement = document.getElementById("answerText");
+form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const question = input.value.trim();
+    if (!question) return;
 
-    fetch("/ask", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/x-www-form-urlencoded"
-        },
-        body: new URLSearchParams({ "question": question })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.answer) {
-            responseElement.innerHTML = data.answer;  // ⚠️ Cho phép <br> hoạt động
-        } else if (data.error) {
-            responseElement.innerHTML = "Lỗi: " + data.error;
-        }
-    })
-    .catch(error => {
-        responseElement.innerHTML = "Lỗi: " + error;
-    });
+    appendMessage("Bạn", question, "user");
+    input.value = "";
 
-    document.getElementById("question").value = ""; // Xoá ô nhập sau khi gửi
+    // Hiển thị trạng thái đang xử lý
+    appendMessage("Bot", "Đang xử lý...", "bot", true);
+
+    try {
+        const response = await fetch("/ask", {
+            method: "POST",
+            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            body: new URLSearchParams({ question })
+        });
+
+        const data = await response.json();
+        const answer = data.answer || data.error || "Không có phản hồi.";
+
+        // Xóa dòng "Đang xử lý..."
+        removeLastMessage();
+
+        appendMessage("Bot", answer, "bot");
+    } catch (error) {
+        removeLastMessage();
+        appendMessage("Bot", "❌ Lỗi khi kết nối server: " + error.message, "bot");
+    }
+
+    input.focus();
 });
+
+function appendMessage(sender, text, cls, isTemp = false) {
+    const div = document.createElement("div");
+    div.classList.add("message");
+    if (isTemp) div.classList.add("temp");
+
+    div.innerHTML = `<span class="${cls}">${sender}:</span><pre style="white-space: pre-wrap;">${text}</pre>`;
+    chatbox.appendChild(div);
+    chatbox.scrollTop = chatbox.scrollHeight;
+}
+
+function removeLastMessage() {
+    const messages = chatbox.querySelectorAll(".message");
+    if (messages.length > 0 && messages[messages.length - 1].classList.contains("temp")) {
+        messages[messages.length - 1].remove();
+    }
+}
