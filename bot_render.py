@@ -84,7 +84,6 @@ def generate_response(question, pdf_text, json_data):
 def index():
     return render_template("index.html")
 
-# ✅ Route API trả lời khi gọi bằng fetch/AJAX
 @app.route("/ask", methods=["POST"])
 def ask():
     question = request.form.get("question", "").strip()
@@ -98,6 +97,8 @@ def ask():
         return jsonify({"error": "Lỗi khi đọc dữ liệu từ file PDF hoặc JSON."})
 
     answer = generate_response(question, pdf_text, json_data)
+    answer = answer.replace("\n", "<br>")  # ⚠️ Đảm bảo xuống dòng đúng chỗ
+
     return jsonify({"answer": answer})
 
 if __name__ == "__main__":

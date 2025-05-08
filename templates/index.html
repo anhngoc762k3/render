@@ -2,25 +2,21 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>Hỏi Đáp Tài Liệu PDF</title>
+    <title>Chatbot Giáo Dục</title>
     <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
     <div class="container">
-        <h2>Hỏi Đáp Tài Liệu PDF</h2>
+        <h2>Chatbot Giáo Dục</h2>
         <form id="questionForm">
-            <input type="text" id="question" name="question" placeholder="Nhập câu hỏi..." required>
+            <input type="text" id="question" placeholder="Nhập câu hỏi..." required autofocus>
             <button type="submit">Gửi</button>
         </form>
-
         <div id="response">
-            <h3>Lịch sử:</h3>
-            <div id="history">
-                <!-- Lịch sử hỏi đáp sẽ được thêm tại đây -->
-            </div>
+            <strong>Trả lời:</strong>
+            <p id="answerText"></p>
         </div>
     </div>
-
     <script src="/static/script.js"></script>
 </body>
 </html>
