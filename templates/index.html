@@ -3,64 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <title>Hỏi Đáp Tài Liệu PDF</title>
-    <style>
-        body {
-            font-family: "Times New Roman", Times, serif;
-            font-size: 13px;
-            background-color: #f2f2f2;
-            padding: 20px;
-        }
-        .chatbox {
-            background-color: white;
-            padding: 15px;
-            border-radius: 8px;
-            max-width: 800px;
-            margin: auto;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-        }
-        textarea {
-            width: 100%;
-            height: 80px;
-            font-family: "Times New Roman", Times, serif;
-            font-size: 13px;
-            padding: 5px;
-        }
-        input[type="submit"] {
-            padding: 8px 20px;
-            font-size: 13px;
-        }
-        .conversation {
-            margin-top: 20px;
-            border-top: 2px solid #ddd;
-            padding-top: 10px;
-        }
-        .user-message, .bot-answer {
-            margin-bottom: 10px;
-        }
-        .user-message {
-            font-weight: bold;
-        }
-        .bot-answer {
-            margin-left: 20px;
-            font-style: italic;
-        }   
-    </style>
+    <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
-    <div class="chatbox">
+    <div class="container">
         <h2>Hỏi Đáp Tài Liệu PDF</h2>
-        <form method="POST">
-            <label for="question">Bạn:</label><br>
-            <textarea name="question" required>{{ question }}</textarea><br><br>
-            <input type="submit" value="Gửi">
+        <form id="questionForm">
+            <input type="text" id="question" name="question" placeholder="Nhập câu hỏi..." required>
+            <button type="submit">Gửi</button>
         </form>
 
-        <div class="conversation">
-            {% for entry in conversation_history %}
-                <div class="user-message">Bạn: {{ entry.question }}</div>
-                <div class="bot-answer">Trả lời: {{ entry.answer|safe }}</div>
-            {% endfor %}
+        <div id="response">
+            <h3>Lịch sử:</h3>
+            <div id="history">
+                <!-- Lịch sử hỏi đáp sẽ được thêm tại đây -->
+            </div>
         </div>
     </div>
+
+    <script src="/static/script.js"></script>
 </body>
 </html>

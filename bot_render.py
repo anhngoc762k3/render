@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, jsonify
 import os
 import re
 import sys
@@ -59,7 +59,6 @@ def find_related_link(question, json_data):
     except:
         return ""
 
-
 def generate_response(question, pdf_text, json_data):
     try:
         thong_tin = "\n".join(json_data.get("thong_tin", []))
@@ -81,27 +80,25 @@ def generate_response(question, pdf_text, json_data):
     except Exception as e:
         return f"Đã xảy ra lỗi: {str(e)}"
 
-@app.route("/", methods=["GET", "POST"])
+@app.route("/")
 def index():
-    conversation_history = []  # Lưu trữ các câu hỏi và trả lời
-    answer = ""
-    question = ""
-    if request.method == "POST":
-        question = request.form.get("question", "")
-        if question:
-            pdf_text = read_pdf(pdf_file_path)
-            json_data = read_json(json_file_path)
-            if "error" in json_data or "Lỗi" in pdf_text:
-                answer = "Lỗi khi đọc dữ liệu từ file PDF hoặc JSON."
-            else:
-                answer = generate_response(question, pdf_text, json_data)
-                answer = answer.replace("\n", "<br>")
+    return render_template("index.html")
 
-                # Lưu câu hỏi và câu trả lời vào lịch sử trò chuyện
-                conversation_history.append({"question": question, "answer": answer})
+# ✅ Route API trả lời khi gọi bằng fetch/AJAX
+@app.route("/ask", methods=["POST"])
+def ask():
+    question = request.form.get("question", "").strip()
+    if not question:
+        return jsonify({"error": "Không có câu hỏi nào được gửi."})
 
-    return render_template("index.html", conversation_history=conversation_history)
+    pdf_text = read_pdf(pdf_file_path)
+    json_data = read_json(json_file_path)
 
+    if "error" in json_data or "Lỗi" in pdf_text:
+        return jsonify({"error": "Lỗi khi đọc dữ liệu từ file PDF hoặc JSON."})
+
+    answer = generate_response(question, pdf_text, json_data)
+    return jsonify({"answer": answer})
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
