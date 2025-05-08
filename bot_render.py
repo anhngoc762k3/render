@@ -1,65 +1,76 @@
-import asyncio
-import json
-import os
 from flask import Flask, request, jsonify
-from g4f.client import Client
+import os, re, sys
 import pdfplumber
+from g4f.client import Client
 
-# Thiết lập vòng lặp sự kiện cho Windows (chỉ dùng khi chạy trên Windows)
-if os.name == "nt":
-    from asyncio import WindowsSelectorEventLoopPolicy
-    asyncio.set_event_loop_policy(WindowsSelectorEventLoopPolicy())
-
-# Khởi tạo client của g4f
+app = Flask(__name__)
 client = Client()
 
-# Hàm đọc nội dung từ file PDF
-def read_pdf(file_path):
-    with pdfplumber.open(file_path) as pdf:
-        text = ""
-        for page in pdf.pages:
-            text += page.extract_text() + "\n"
-    return text
+os.environ["G4F_NO_UPDATE"] = "true"
+os.environ["G4F_DEBUG"] = "false"
 
-# Hàm trả lời câu hỏi dựa trên nội dung PDF
+pdf_file_path = "MTvE2.pdf"  
+
+class HiddenPrints:
+    def __enter__(self):
+        self._original_stdout = sys.stdout
+        self._original_stderr = sys.stderr
+        sys.stdout = open(os.devnull, 'w')
+        sys.stderr = open(os.devnull, 'w')
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        sys.stdout.close()
+        sys.stderr.close()
+        sys.stdout = self._original_stdout
+        sys.stderr = self._original_stderr
+
+def read_pdf(file_path):
+    try:
+        with pdfplumber.open(file_path) as pdf:
+            text = ""
+            for page in pdf.pages:
+                extracted_text = page.extract_text()
+                if extracted_text:
+                    text += extracted_text + "\n"
+        return text
+    except Exception as e:
+        return f"Lỗi đọc file PDF: {str(e)}"
+
 def generate_response(question, pdf_text):
     try:
-        # Giới hạn ngữ cảnh nếu văn bản quá dài
         context = pdf_text[:6000] if len(pdf_text) > 6000 else pdf_text
-
-        # Thiết lập prompt với câu hỏi và ngữ cảnh
         prompt = f"Đây là một đoạn văn từ tài liệu: {context}\n\nCâu hỏi: {question}\nTrả lời:"
 
-        # Sử dụng g4f.client để gọi mô hình OpenAI
-        response = client.chat.completions.create(
-            model="gpt-4o-mini",  # Chọn mô hình
-            messages=[{"role": "user", "content": prompt}],
-        )
-
-        # Trích xuất câu trả lời từ kết quả trả về
-        answer = response.choices[0].message.content
+        with HiddenPrints():
+            response = client.chat.completions.create(
+                model="gpt-4",
+                messages=[{"role": "user", "content": prompt}],
+                stream=False
+            )
+        answer = response.choices[0].message.content.strip()
+        answer = re.sub(r'\n+', '\n', answer)
         return answer
     except Exception as e:
         return f"Đã xảy ra lỗi: {str(e)}"
 
-# Đọc nội dung từ file PDF
-pdf_file_path = 'MTvE2.pdf'  # Thay bằng đường dẫn đến file PDF của bạn
-pdf_text = read_pdf(pdf_file_path)
-
-# Khởi tạo Flask app
-app = Flask(__name__)
-
-@app.route('/ask', methods=['POST'])
-def ask():
-    data = request.json
-    question = data.get('question')
-
+@app.route("/ask", methods=["POST"])
+def ask_question():
+    data = request.get_json()
+    question = data.get("question", "")
     if not question:
-        return jsonify({"error": "Không nhận được câu hỏi."}), 400
+        return jsonify({"error": "Missing question"}), 400
+
+    pdf_text = read_pdf(pdf_file_path)
+    if "Lỗi đọc file PDF" in pdf_text:
+        return jsonify({"error": pdf_text}), 500
 
     answer = generate_response(question, pdf_text)
     return jsonify({"answer": answer})
 
+@app.route("/", methods=["GET"])
+def home():
+    return "API is running11."
+
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5000))  # Đảm bảo chọn cổng đúng cho Render
+    port = int(os.environ.get("PORT", 5000)) 
     app.run(host="0.0.0.0", port=port)
