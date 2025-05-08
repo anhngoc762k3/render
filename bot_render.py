@@ -52,10 +52,13 @@ def find_related_link(question, json_data):
         links = []
         for item in json_data.get("bai_hoc", []):
             if item["keyword"].lower() in question.lower():
-                links.append(f'<a href="{item["link"]}" target="_blank">{item["link"]}</a>')
+                display_text = item["keyword"].upper()
+                link_html = f'<a href="{item["link"]}" target="_blank">{display_text}</a>'
+                links.append(link_html)
         return "<br><br><strong>Link bài học liên quan:</strong><br>" + "<br>".join(links) if links else ""
     except:
         return ""
+
 
 def generate_response(question, pdf_text, json_data):
     try:
