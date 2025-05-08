@@ -83,6 +83,7 @@ def generate_response(question, pdf_text, json_data):
 
 @app.route("/", methods=["GET", "POST"])
 def index():
+    conversation_history = []  # Lưu trữ các câu hỏi và trả lời
     answer = ""
     question = ""
     if request.method == "POST":
@@ -95,7 +96,12 @@ def index():
             else:
                 answer = generate_response(question, pdf_text, json_data)
                 answer = answer.replace("\n", "<br>")
-    return render_template("index.html", answer=answer, question=question)
+
+                # Lưu câu hỏi và câu trả lời vào lịch sử trò chuyện
+                conversation_history.append({"question": question, "answer": answer})
+
+    return render_template("index.html", conversation_history=conversation_history)
+
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))

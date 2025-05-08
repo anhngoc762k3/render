@@ -55,12 +55,12 @@
             <input type="submit" value="Gửi">
         </form>
 
-        {% if question and answer %}
-            <div class="conversation">
-                <div class="user-message">Bạn: {{ question }}</div>
-                <div class="bot-answer">Trả lời: {{ answer|safe }}</div>
-            </div>
-        {% endif %}
+        <div class="conversation">
+            {% for entry in conversation_history %}
+                <div class="user-message">Bạn: {{ entry.question }}</div>
+                <div class="bot-answer">Trả lời: {{ entry.answer|safe }}</div>
+            {% endfor %}
+        </div>
     </div>
 </body>
 </html>
