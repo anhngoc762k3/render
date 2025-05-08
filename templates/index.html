@@ -2,21 +2,63 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>Chatbot Giáo Dục</title>
-    <link rel="stylesheet" href="/static/style.css">
+    <title>Chatbot Hỏi Đáp</title>
+    <style>
+        body { font-family: Arial; padding: 20px; background: #f4f4f4; }
+        #chat-history { background: white; padding: 15px; border-radius: 8px; max-width: 800px; margin: auto; }
+        .entry { margin-bottom: 20px; border-bottom: 1px solid #ccc; padding-bottom: 10px; }
+        .question { font-weight: bold; color: #2c3e50; }
+        .answer { margin-top: 5px; color: #34495e; }
+    </style>
 </head>
 <body>
-    <div class="container">
-        <h2>Chatbot Giáo Dục</h2>
-        <form id="questionForm">
-            <input type="text" id="question" placeholder="Nhập câu hỏi..." required autofocus>
-            <button type="submit">Gửi</button>
-        </form>
-        <div id="response">
-            <strong>Trả lời:</strong>
-            <p id="answerText"></p>
-        </div>
+    <h2>Chatbot Hỏi Đáp từ PDF và JSON</h2>
+
+    <form id="chat-form">
+        <input type="text" name="question" id="question" placeholder="Nhập câu hỏi..." required style="width:70%;">
+        <button type="submit">Gửi</button>
+    </form>
+
+    <br>
+
+    <div id="chat-history">
+        <!-- Lịch sử hỏi đáp sẽ được chèn vào đây -->
     </div>
-    <script src="/static/script.js"></script>
+
+    <script>
+        const form = document.getElementById("chat-form");
+        const questionInput = document.getElementById("question");
+        const chatHistoryDiv = document.getElementById("chat-history");
+
+        form.addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const formData = new FormData(form);
+
+            const response = await fetch("/ask", {
+                method: "POST",
+                body: formData
+            });
+
+            const data = await response.json();
+
+            if (data.error) {
+                alert(data.error);
+            } else {
+                chatHistoryDiv.innerHTML = ""; // Xóa trước khi hiển thị lại toàn bộ
+                data.history.forEach(item => {
+                    const entry = document.createElement("div");
+                    entry.className = "entry";
+                    entry.innerHTML = `
+                        <div class="question">🤔 <strong>Câu hỏi:</strong> ${item.question}</div>
+                        <div class="answer">💡 <strong>Trả lời:</strong><br>${item.answer}</div>
+                    `;
+                    chatHistoryDiv.appendChild(entry);
+                });
+
+                // Xoá nội dung input
+                questionInput.value = "";
+            }
+        });
+    </script>
 </body>
 </html>
