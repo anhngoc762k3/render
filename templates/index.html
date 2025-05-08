@@ -29,6 +29,21 @@
             padding: 8px 20px;
             font-size: 13px;
         }
+        .conversation {
+            margin-top: 20px;
+            border-top: 2px solid #ddd;
+            padding-top: 10px;
+        }
+        .user-message, .bot-answer {
+            margin-bottom: 10px;
+        }
+        .user-message {
+            font-weight: bold;
+        }
+        .bot-answer {
+            margin-left: 20px;
+            font-style: italic;
+        }
     </style>
 </head>
 <body>
@@ -39,9 +54,12 @@
             <textarea name="question" required>{{ question }}</textarea><br><br>
             <input type="submit" value="Gửi">
         </form>
-        {% if answer %}
-            <hr>
-            <p><strong>Trả lời:</strong><br>{{ answer|safe }}</p>
+
+        {% if question and answer %}
+            <div class="conversation">
+                <div class="user-message">Bạn: {{ question }}</div>
+                <div class="bot-answer">Trả lời: {{ answer|safe }}</div>
+            </div>
         {% endif %}
     </div>
 </body>
