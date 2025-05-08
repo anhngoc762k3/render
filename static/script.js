@@ -5,6 +5,18 @@ document.addEventListener("DOMContentLoaded", function () {
 
     form.addEventListener("submit", async (e) => {
         e.preventDefault();
+        await sendQuestion();
+    });
+
+    // Gửi bằng Enter, xuống dòng bằng Shift+Enter
+    input.addEventListener("keydown", function (e) {
+        if (e.key === "Enter" && !e.shiftKey) {
+            e.preventDefault(); // Ngăn xuống dòng
+            form.requestSubmit(); // Kích hoạt submit
+        }
+    });
+
+    async function sendQuestion() {
         const question = input.value.trim();
         if (!question) return;
 
@@ -29,7 +41,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         input.value = "";
         input.focus();
-    });
+    }
 
     function appendMessage(sender, text, cls) {
         const div = document.createElement("div");
