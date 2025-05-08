@@ -21,6 +21,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
         appendMessage("Bạn", question, "user");
 
+        // ✨ Xóa ô nhập ngay sau khi lấy nội dung
+        input.value = "";
+        input.focus();
+
         try {
             const response = await fetch("/ask", {
                 method: "POST",
@@ -37,9 +41,6 @@ document.addEventListener("DOMContentLoaded", function () {
         } catch (err) {
             appendMessage("Bot", "Lỗi khi kết nối đến máy chủ.", "bot");
         }
-
-        input.value = "";
-        input.focus();
     }
 
     function appendMessage(sender, text, cls) {
