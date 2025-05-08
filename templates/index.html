@@ -2,25 +2,153 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>Hỏi Đáp Tài Liệu PDF</title>
-    <link rel="stylesheet" href="/static/style.css">
+    <title>Chatbot Hỏi Đáp PDF + JSON</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f1f1f1;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            width: 60%;
+            margin: 40px auto;
+            background: #ffffff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        h2 {
+            text-align: center;
+            color: #007bff;
+        }
+
+        #chatbox {
+            height: 400px;
+            overflow-y: auto;
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin-bottom: 20px;
+            background: #f9f9f9;
+        }
+
+        .message {
+            margin: 10px 0;
+        }
+
+        .user {
+            font-weight: bold;
+            color: #2b7cff;
+        }
+
+        .bot {
+            font-weight: bold;
+            color: #28a745;
+        }
+
+        input[type="text"] {
+            width: 80%;
+            padding: 10px;
+            border-radius: 4px;
+            border: 1px solid #aaa;
+        }
+
+        button {
+            padding: 10px 15px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        .response {
+            margin-top: 20px;
+            background-color: #f9f9f9;
+            padding: 10px;
+            white-space: pre-wrap;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+        }
+
+        textarea {
+            width: 100%;
+            height: 80px;
+            font-family: "Arial", sans-serif;
+            font-size: 14px;
+            padding: 10px;
+            border-radius: 4px;
+            border: 1px solid #aaa;
+        }
+    </style>
 </head>
 <body>
-    <div class="container">
-        <h2>Hỏi Đáp Tài Liệu PDF</h2>
-        <form id="questionForm">
-            <input type="text" id="question" name="question" placeholder="Nhập câu hỏi..." required>
-            <button type="submit">Gửi</button>
-        </form>
+<div class="container">
+    <h2>Hỏi Đáp Tài Liệu PDF + JSON</h2>
+    
+    <div id="chatbox"></div>
 
-        <div id="response">
-            <h3>Lịch sử:</h3>
-            <div id="history">
-                <!-- Lịch sử hỏi đáp sẽ được thêm tại đây -->
-            </div>
-        </div>
+    <form id="questionForm">
+        <textarea id="question" name="question" placeholder="Nhập câu hỏi..." required></textarea><br>
+        <button type="submit">Gửi câu hỏi</button>
+    </form>
+
+    <div id="response" class="response" style="display: none;">
+        <strong>Trả lời:</strong><br>
+        <pre id="answerText"></pre>
     </div>
+</div>
 
-    <script src="/static/script.js"></script>
+<script>
+    const chatbox = document.getElementById("chatbox");
+    const form = document.getElementById("questionForm");
+    const input = document.getElementById("question");
+    const responseDiv = document.getElementById("response");
+    const answerText = document.getElementById("answerText");
+
+    form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const question = input.value.trim();
+        if (!question) return;
+
+        // Hiển thị câu hỏi
+        appendMessage("Bạn", question, "user");
+
+        // Gửi câu hỏi tới server
+        const response = await fetch("/ask", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded",
+            },
+            body: new URLSearchParams({ question })
+        });
+
+        const data = await response.json();
+        const answer = data.answer || data.error || "Không có phản hồi.";
+
+        // Hiển thị câu trả lời
+        appendMessage("Bot", answer, "bot");
+
+        // Hiển thị kết quả trả lời ở dưới form
+        answerText.textContent = answer;
+        responseDiv.style.display = 'block';
+
+        input.value = "";
+        input.focus();
+    });
+
+    function appendMessage(sender, text, cls) {
+        const div = document.createElement("div");
+        div.classList.add("message");
+        div.innerHTML = `<span class="${cls}">${sender}:</span><pre style="white-space: pre-wrap; margin: 5px 0;">${text}</pre>`;
+        chatbox.appendChild(div);
+        chatbox.scrollTop = chatbox.scrollHeight;
+    }
+</script>
 </body>
 </html>
