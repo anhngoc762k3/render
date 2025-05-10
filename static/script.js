@@ -17,21 +17,24 @@ document.addEventListener("DOMContentLoaded", function () {
 
     async function sendQuestion() {
         const question = input.value.trim();
+        const fileInput = document.getElementById("pdfFile");
         if (!question) return;
 
         appendMessage("Bạn", question, "user");
 
-        // ✨ Xóa ô nhập ngay sau khi lấy nội dung
         input.value = "";
         input.focus();
+
+        const formData = new FormData();
+        formData.append("question", question);
+        if (fileInput.files.length > 0) {
+            formData.append("pdfFile", fileInput.files[0]);
+        }
 
         try {
             const response = await fetch("/ask", {
                 method: "POST",
-                headers: {
-                    "Content-Type": "application/x-www-form-urlencoded",
-                },
-                body: new URLSearchParams({ question })
+                body: formData
             });
 
             const data = await response.json();

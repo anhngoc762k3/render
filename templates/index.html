@@ -11,8 +11,11 @@
 
     <div id="chatbox"></div>
 
-    <form id="questionForm">
+    <form id="questionForm" enctype="multipart/form-data">
         <textarea id="question" name="question" placeholder="Nhập câu hỏi..." required></textarea><br>
+        
+        <input type="file" id="pdfFile" name="pdfFile" accept="application/pdf"><br><br>
+
         <button type="submit">Gửi câu hỏi</button>
     </form>
 </div>
