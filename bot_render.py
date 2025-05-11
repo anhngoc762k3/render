@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify, session
 import os
 import re
 import sys
@@ -8,6 +8,7 @@ from g4f.client import Client
 from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
+app.secret_key = os.urandom(24)  # Thiết lập secret key cho session
 client = Client()
 
 os.environ["G4F_NO_UPDATE"] = "true"
@@ -18,6 +19,9 @@ json_file_path = "data.json"
 upload_folder = "uploads"
 os.makedirs(upload_folder, exist_ok=True)
 app.config['MAX_CONTENT_LENGTH'] = 10 * 1024 * 1024  # 10 MB max
+
+# Lưu trữ tạm thời dữ liệu đã xử lý
+processed_data_cache = {}
 
 class HiddenPrints:
     def __enter__(self):
@@ -93,6 +97,10 @@ def ask():
     if not question:
         return jsonify({"error": "Không có câu hỏi nào được gửi."})
 
+    # Kiểm tra xem câu hỏi đã được trả lời chưa (dùng session để lưu câu trả lời)
+    if question in session:
+        return jsonify({"answer": session[question]})
+
     file = request.files.get("pdfFile")
     if file and file.filename.endswith(".pdf"):
         filename = secure_filename(file.filename)
@@ -101,15 +109,26 @@ def ask():
         pdf_text = read_pdf(upload_path)
         os.remove(upload_path)
     else:
-        pdf_text = read_pdf(pdf_file_path)
+        if "pdf_text" in processed_data_cache:
+            pdf_text = processed_data_cache["pdf_text"]
+        else:
+            pdf_text = read_pdf(pdf_file_path)
+            processed_data_cache["pdf_text"] = pdf_text
 
-    json_data = read_json(json_file_path)
+    if "json_data" in processed_data_cache:
+        json_data = processed_data_cache["json_data"]
+    else:
+        json_data = read_json(json_file_path)
+        processed_data_cache["json_data"] = json_data
 
     if "error" in json_data or "Lỗi" in pdf_text:
         return jsonify({"error": "Lỗi khi đọc dữ liệu từ file PDF hoặc JSON."})
 
     answer = generate_response(question, pdf_text, json_data)
     answer = answer.replace("\n", "<br>")
+
+    # Lưu câu trả lời vào session
+    session[question] = answer
 
     return jsonify({"answer": answer})
 
